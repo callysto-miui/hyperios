@@ -18,7 +18,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "hyperos-unlocker-secret-2024")
 
 # ── Admin credentials (set via env vars on Render) ────────────────────────────
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "JEPFX")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "jepfx19@gmail.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "JEPFX_0")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
