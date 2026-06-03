@@ -1,25 +1,31 @@
+
+import os
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
 import pytz
 import requests
 import uuid
-import json
 import time
 from functools import wraps
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hyperos_bot.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+
+# Use file-based SQLite for Render (disk is ephemeral but works for free tier)
+# For production with persistence, consider PostgreSQL
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "hyperos_bot.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-scheduler = APScheduler()
-scheduler.init_app(app)
+
+# Initialize scheduler
+scheduler = BackgroundScheduler()
 scheduler.start()
 
-# Admin credentials
+# Admin credentials (hardcoded as requested)
 ADMIN_USERNAME = 'JEPFX'
 ADMIN_PASSWORD = 'JEPFXADMIN'
 
@@ -318,5 +324,9 @@ def apply_unlock(account):
 with app.app_context():
     db.create_all()
 
+import atexit
+atexit.register(lambda: scheduler.shutdown())
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
